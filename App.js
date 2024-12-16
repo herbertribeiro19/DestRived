@@ -178,6 +178,17 @@ const App = () => {
   return (
     <GestureHandlerRootView style={styles.gesture}>
       <View style={styles.container}>
+        {/* <View>
+          <TouchableOpacity
+            style={styles.button2}
+            onPress={() => {
+              // bottomSheetRef.current?.open(2); // Minimiza o BottomSheet
+              openBottom();
+            }}
+          >
+            <Text style={styles.buttonText}>Traçar nova rota</Text>
+          </TouchableOpacity>
+        </View> */}
         {currentLocation ? (
           <MapView
             style={[styles.map]}
@@ -221,7 +232,7 @@ const App = () => {
           ref={bottomSheetRef}
           onChange={handleSheetChanges}
           snapPoints={["20%", "30%", "40%"]}
-          index={1}
+          index={3}
           enablePanDownToClose={false}
         >
           <BottomSheetView style={styles.contentContainer}>
@@ -245,7 +256,7 @@ const App = () => {
             <TouchableOpacity
               onPress={() => {
                 fetchRoute();
-                // bottomSheetRef.current?.close(); // Minimiza o BottomSheet
+                bottomSheetRef.current?.close(); // Minimiza o BottomSheet
               }}
               style={styles.button}
             >
@@ -263,8 +274,20 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
   },
+  button2: {
+    backgroundColor: "blue",
+    padding: 12,
+    borderRadius: 8,
+    marginTop: 0,
+    zIndex: 1,
+    alignSelf: "center",
+    justifyContent: "center",
+    alignItems: "center",
+    marginTop: "200%",
+    width: "60%",
+  },
   contentContainer: {
-    flexDirection: "column",
+    flex: 1,
     gap: 30,
     padding: 36,
     alignItems: "center",
