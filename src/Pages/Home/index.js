@@ -13,9 +13,10 @@ import BottomSheet, { BottomSheetView } from "@gorhom/bottom-sheet";
 import MapView, { Marker, Polyline } from "react-native-maps";
 import * as Location from "expo-location";
 import debounce from "lodash.debounce";
+import "react-native-gesture-handler";
 
 const App = () => {
-  // refs
+  // ref
   const bottomSheetRef = useRef(null);
   const [currentLocation, setCurrentLocation] = useState(null);
   const [destination, setDestination] = useState(null);
@@ -28,7 +29,6 @@ const App = () => {
     console.log("handleSheetChanges", index);
   }, []);
 
-  // Função para obter localização atual
   async function getCurrentLocation() {
     try {
       const { granted } = await Location.requestForegroundPermissionsAsync();
@@ -49,88 +49,60 @@ const App = () => {
     }
   }
 
-  // Função para buscar sugestões de lugares
   const fetchSuggestions = useCallback(
     debounce(async (query) => {
-      if (query.length < 3 || !currentLocation) return;
-
-      console.log(
-        "Buscando sugestões com query:",
-        query,
-        " e localização:",
-        currentLocation
-      );
+      if (query.length < 3) return;
 
       try {
         const response = await fetch(
-          `https://maps.googleapis.com/maps/api/place/autocomplete/json?input=${query}&location=${currentLocation.latitude},${currentLocation.longitude}&radius=50000&key=AIzaSyAHrSmP_6TJn801gJXnRFR437ytmVHhBXM`
+          `https://maps.googleapis.com/maps/api/place/autocomplete/json?input=${query}&location=${currentLocation.latitude},${currentLocation.longitude}&radius=50000&key=AIzaSyCz0Ilso2uEEbYmnNVUUw0CwOjGvOZinyE`
         );
         const data = await response.json();
-        console.log("Resposta da API:", data); // Log da resposta da API
         if (data.predictions) {
           setSuggestions(data.predictions);
-        } else {
-          console.log("Nenhuma sugestão encontrada.");
         }
       } catch (error) {
         console.error("Erro ao buscar sugestões: ", error);
       }
-    }, 300),
+    }, 300), // Debounce de 300ms
     [currentLocation]
   );
 
-  // Função para selecionar um lugar
   async function selectPlace(place) {
     try {
       const response = await fetch(
-        `https://maps.googleapis.com/maps/api/place/details/json?place_id=${place.place_id}&key=AIzaSyAHrSmP_6TJn801gJXnRFR437ytmVHhBXM`
+        `https://maps.googleapis.com/maps/api/place/details/json?place_id=${place.place_id}&key=AIzaSyCz0Ilso2uEEbYmnNVUUw0CwOjGvOZinyE`
       );
       const data = await response.json();
-
-      if (data.status === "OK" && data.result && data.result.geometry) {
-        const location = data.result.geometry.location;
-        setSelectedPlace({
-          latitude: location.lat,
-          longitude: location.lng,
-        });
-        setDestination(place.description);
-        setSuggestions([]);
-      } else {
-        console.log(
-          "Erro ao buscar detalhes do lugar ou lugar não encontrado."
-        );
-      }
+      const location = data.result.geometry.location;
+      setSelectedPlace({
+        latitude: location.lat,
+        longitude: location.lng,
+      });
+      setDestination(place.description);
+      setSuggestions([]);
     } catch (error) {
       console.error("Erro ao selecionar lugar: ", error);
     }
   }
 
-  // Função para buscar a rota
   async function fetchRoute() {
-    if (!selectedPlace) {
-      console.log("Nenhum destino selecionado.");
-      return;
-    }
+    if (!selectedPlace) return;
 
-    console.log("Iniciando busca de rota...");
     try {
       const response = await fetch(
-        `https://maps.googleapis.com/maps/api/directions/json?origin=${currentLocation.latitude},${currentLocation.longitude}&destination=${selectedPlace.latitude},${selectedPlace.longitude}&key=AIzaSyAHrSmP_6TJn801gJXnRFR437ytmVHhBXM`
+        `https://maps.googleapis.com/maps/api/directions/json?origin=${currentLocation.latitude},${currentLocation.longitude}&destination=${selectedPlace.latitude},${selectedPlace.longitude}&key=AIzaSyCz0Ilso2uEEbYmnNVUUw0CwOjGvOZinyE`
       );
       const data = await response.json();
-      console.log("Dados da rota:", data);
       if (data.routes.length) {
         const points = decodePolyline(data.routes[0].overview_polyline.points);
         setRouteCoordinates(points);
-      } else {
-        console.log("Nenhuma rota encontrada.");
       }
     } catch (error) {
       console.error("Erro ao buscar rota: ", error);
     }
   }
 
-  // Função para decodificar a polyline
   function decodePolyline(encoded) {
     let points = [];
     let index = 0,
@@ -165,8 +137,6 @@ const App = () => {
         longitude: lng / 1e5,
       });
     }
-
-    console.log("Coordenadas decodificadas:", points);
     return points;
   }
 
@@ -176,7 +146,7 @@ const App = () => {
 
   // renders
   return (
-    <GestureHandlerRootView style={styles.gesture}>
+    <GestureHandlerRootView style={styles.container}>
       <View style={styles.container}>
         {currentLocation ? (
           <MapView
@@ -202,15 +172,6 @@ const App = () => {
                 strokeColor="blue"
               />
             )}
-            {selectedPlace && (
-              <Marker
-                coordinate={{
-                  latitude: selectedPlace.latitude,
-                  longitude: selectedPlace.longitude,
-                }}
-                title="Destino"
-              />
-            )}
           </MapView>
         ) : (
           <View style={styles.loadingContainer}>
@@ -220,8 +181,8 @@ const App = () => {
         <BottomSheet
           ref={bottomSheetRef}
           onChange={handleSheetChanges}
-          snapPoints={["20%", "30%", "40%"]}
-          index={1}
+          snapPoints={["30%", "40%", "50%"]}
+          index={2} // Começar no topo
           enablePanDownToClose={false}
         >
           <BottomSheetView style={styles.contentContainer}>
@@ -242,13 +203,7 @@ const App = () => {
                 </TouchableOpacity>
               )}
             />
-            <TouchableOpacity
-              onPress={() => {
-                fetchRoute();
-                // bottomSheetRef.current?.close(); // Minimiza o BottomSheet
-              }}
-              style={styles.button}
-            >
+            <TouchableOpacity onPress={fetchRoute} style={styles.button}>
               <Text style={styles.buttonText}>Traçar Rota</Text>
             </TouchableOpacity>
           </BottomSheetView>
@@ -259,32 +214,35 @@ const App = () => {
 };
 
 const styles = StyleSheet.create({
-  gesture: { flex: 1 },
   container: {
     flex: 1,
+    backgroundColor: "grey",
   },
   contentContainer: {
-    flexDirection: "column",
-    gap: 30,
+    flex: 1,
     padding: 36,
     alignItems: "center",
   },
   map: { width: "100%", zIndex: 0, height: "100%", position: "absolute" },
   loadingContainer: { flex: 1, justifyContent: "center", alignItems: "center" },
+  bottomSheetContent: {
+    flex: 1,
+    zIndex: 1,
+    padding: 16,
+  },
   input: {
     borderWidth: 1,
     borderColor: "#ccc",
-    borderRadius: 20,
-    width: "100%",
-    padding: 18,
-    marginBottom: 0,
+    borderRadius: 8,
+    padding: 10,
+    marginBottom: 10,
   },
   suggestion: { padding: 10, borderBottomWidth: 1, borderColor: "#ccc" },
   button: {
     backgroundColor: "blue",
     padding: 12,
     borderRadius: 8,
-    marginTop: 0,
+    marginTop: 10,
   },
   buttonText: {
     color: "white",
