@@ -181,17 +181,17 @@ const App = () => {
   return (
     <GestureHandlerRootView style={styles.gesture}>
       <View style={styles.container}>
-        {/* <View>
+        <View>
           <TouchableOpacity
             style={styles.button2}
             onPress={() => {
-              // bottomSheetRef.current?.open(2); // Minimiza o BottomSheet
-              openBottom();
+              fetchRoute();
+              bottomSheetRef.current?.close(); // Minimiza o BottomSheet
             }}
           >
-            <Text style={styles.buttonText}>Traçar nova rota</Text>
+            <Text style={styles.buttonText}>Traçar rota</Text>
           </TouchableOpacity>
-        </View> */}
+        </View>
         {currentLocation ? (
           <MapView
             style={[styles.map]}
@@ -256,7 +256,7 @@ const App = () => {
                 </TouchableOpacity>
               )}
             />
-            <TouchableOpacity
+            {/* <TouchableOpacity
               onPress={() => {
                 fetchRoute();
                 bottomSheetRef.current?.close(); // Minimiza o BottomSheet
@@ -264,7 +264,7 @@ const App = () => {
               style={styles.button}
             >
               <Text style={styles.buttonText}>Traçar Rota</Text>
-            </TouchableOpacity>
+            </TouchableOpacity> */}
           </BottomSheetView>
         </BottomSheet>
       </View>
