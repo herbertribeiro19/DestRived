@@ -11,6 +11,9 @@ import {
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import BottomSheet, { BottomSheetView } from "@gorhom/bottom-sheet";
 import MapView, { Marker, Polyline } from "react-native-maps";
+import "react-native-gesture-handler";
+import "react-native-reanimated";
+
 import * as Location from "expo-location";
 import debounce from "lodash.debounce";
 
@@ -231,7 +234,7 @@ const App = () => {
         <BottomSheet
           ref={bottomSheetRef}
           onChange={handleSheetChanges}
-          snapPoints={["20%", "30%", "40%"]}
+          snapPoints={["36%", "46%", "55%"]}
           index={3}
           enablePanDownToClose={false}
         >
